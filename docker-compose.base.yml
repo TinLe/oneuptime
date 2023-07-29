@@ -366,20 +366,30 @@ services:
             - home
             - notification
         restart: always
-        networks:
-          - oneuptime
         image: nginx:1.23.3-alpine
         environment:
             <<: *common-variables
         ports:
-            - '80:80'
-            - '443:443'
+            - '8000:80'
+            - '8443:443'
         volumes:
             - ./Certs:/etc/nginx/certs
+#       networks:
+#         - oneuptime
+        networks:
+           oneuptime:
+             ipv4_address: 172.30.0.100
+
 volumes:
     postgres:
     clickhouse:
 
+#networks:
+#  oneuptime:
+#    driver: bridge
 networks:
   oneuptime:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
