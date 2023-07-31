@@ -95,214 +95,245 @@ const MonitorStepElement: FunctionComponent<ComponentProps> = (
 
     return (
         <div className="mt-5">
-            <div className="mt-5">
-                <FieldLabelElement
-                    title={destinationFieldTitle}
-                    description={destinationFieldDescription}
-                    required={true}
-                />
-                <Input
-                    initialValue={destinationInputValue}
-                    onBlur={() => {
-                        setTouched({
-                            ...touched,
-                            destination: true,
-                        });
-
-                        if (
-                            !monitorStep?.data?.monitorDestination?.toString()
-                        ) {
-                            setErrors({
-                                ...errors,
-                                destination: 'Destination is required',
-                            });
-                        } else {
-                            setErrors({
-                                ...errors,
-                                destination: '',
-                            });
-                            setDestinationInputValue(
-                                monitorStep?.data?.monitorDestination?.toString()
-                            );
-                        }
-                    }}
-                    error={
-                        touched['destination'] && errors['destination']
-                            ? errors['destination']
-                            : undefined
-                    }
-                    onChange={(value: string) => {
-                        let destination: IP | URL | Hostname | undefined =
-                            undefined;
-
-                        try {
-                            if (props.monitorType === MonitorType.IP) {
-                                destination = IP.fromString(value);
-                            } else if (props.monitorType === MonitorType.Ping) {
-                                if (IP.isIP(value)) {
-                                    destination = IP.fromString(value);
-                                } else {
-                                    destination = Hostname.fromString(value);
-                                }
-                            } else if (
-                                props.monitorType === MonitorType.Website
-                            ) {
-                                destination = URL.fromString(value);
-                            } else if (props.monitorType === MonitorType.API) {
-                                destination = URL.fromString(value);
-                            }
-
-                            setErrors({
-                                ...errors,
-                                destination: '',
-                            });
-                        } catch (err) {
-                            if (err instanceof Exception) {
-                                setErrors({
-                                    ...errors,
-                                    destination: err.message,
-                                });
-                            } else {
-                                setErrors({
-                                    ...errors,
-                                    destination: 'Invalid Destination',
-                                });
-                            }
-                        }
-
-                        if (destination) {
-                            monitorStep.setMonitorDestination(destination);
-                        }
-
-                        setDestinationInputValue(value);
-                        setMonitorStep(MonitorStep.clone(monitorStep));
-                    }}
-                />
-            </div>
-            {props.monitorType === MonitorType.API && (
-                <div className="mt-5">
-                    <FieldLabelElement
-                        title={'API Request Type'}
-                        description={'What is the type of the API request?'}
-                        required={true}
-                    />
-                    <Dropdown
-                        initialValue={requestTypeDropdownOptions.find(
-                            (i: DropdownOption) => {
-                                return (
-                                    i.value ===
-                                    (monitorStep?.data?.requestType ||
-                                        HTTPMethod.GET)
-                                );
-                            }
-                        )}
-                        options={requestTypeDropdownOptions}
-                        onChange={(
-                            value: DropdownValue | Array<DropdownValue> | null
-                        ) => {
-                            monitorStep.setRequestType(
-                                (value?.toString() as HTTPMethod) ||
-                                    HTTPMethod.GET
-                            );
-                            setMonitorStep(MonitorStep.clone(monitorStep));
-                        }}
-                    />
-                </div>
-            )}
-
-            {!showAdvancedOptionsRequestBodyAndHeaders &&
-                props.monitorType === MonitorType.API && (
-                    <div className="mt-1 -ml-3">
-                        <Button
-                            title="Advanced: Add Request Headers and Body"
-                            buttonStyle={ButtonStyleType.SECONDARY_LINK}
-                            onClick={() => {
-                                setShowAdvancedOptionsRequestBodyAndHeaders(
-                                    true
-                                );
-                            }}
-                        />
-                    </div>
-                )}
-            {showAdvancedOptionsRequestBodyAndHeaders &&
-                props.monitorType === MonitorType.API && (
+            {props.monitorType !== MonitorType.IncomingRequest && (
+                <div>
                     <div className="mt-5">
                         <FieldLabelElement
-                            title={'Request Headers'}
-                            description={'Request Headers to send, if any.'}
-                            required={false}
+                            title={destinationFieldTitle}
+                            description={destinationFieldDescription}
+                            required={true}
                         />
-                        <DictionaryOfStrings
-                            addButtonSuffix="Request Header"
-                            keyPlaceholder={'Header Name'}
-                            valuePlaceholder={'Header Value'}
-                            initialValue={
-                                monitorStep.data?.requestHeaders || {}
-                            }
-                            onChange={(value: Dictionary<string>) => {
-                                monitorStep.setRequestHeaders(value);
-                                setMonitorStep(MonitorStep.clone(monitorStep));
-                            }}
-                        />
-                    </div>
-                )}
-
-            {showAdvancedOptionsRequestBodyAndHeaders &&
-                props.monitorType === MonitorType.API && (
-                    <div className="mt-5">
-                        <FieldLabelElement
-                            title={'Request Body (in JSON)'}
-                            description={
-                                'Request Body to send in JSON, if any.'
-                            }
-                            required={false}
-                        />
-                        <CodeEditor
-                            type={CodeType.JSON}
+                        <Input
+                            initialValue={destinationInputValue}
                             onBlur={() => {
                                 setTouched({
                                     ...touched,
-                                    requestBody: true,
+                                    destination: true,
                                 });
+
+                                if (
+                                    !monitorStep?.data?.monitorDestination?.toString()
+                                ) {
+                                    setErrors({
+                                        ...errors,
+                                        destination: 'Destination is required',
+                                    });
+                                } else {
+                                    setErrors({
+                                        ...errors,
+                                        destination: '',
+                                    });
+                                    setDestinationInputValue(
+                                        monitorStep?.data?.monitorDestination?.toString()
+                                    );
+                                }
                             }}
                             error={
-                                touched['requestBody'] && errors['requestBody']
-                                    ? errors['requestBody']
+                                touched['destination'] && errors['destination']
+                                    ? errors['destination']
                                     : undefined
                             }
-                            initialValue={monitorStep.data?.requestBody}
                             onChange={(value: string) => {
+                                let destination:
+                                    | IP
+                                    | URL
+                                    | Hostname
+                                    | undefined = undefined;
+
                                 try {
-                                    JSON.parse(value);
+                                    if (props.monitorType === MonitorType.IP) {
+                                        destination = IP.fromString(value);
+                                    } else if (
+                                        props.monitorType === MonitorType.Ping
+                                    ) {
+                                        if (IP.isIP(value)) {
+                                            destination = IP.fromString(value);
+                                        } else {
+                                            destination =
+                                                Hostname.fromString(value);
+                                        }
+                                    } else if (
+                                        props.monitorType ===
+                                        MonitorType.Website
+                                    ) {
+                                        destination = URL.fromString(value);
+                                    } else if (
+                                        props.monitorType === MonitorType.API
+                                    ) {
+                                        destination = URL.fromString(value);
+                                    }
+
                                     setErrors({
                                         ...errors,
-                                        requestBody: '',
+                                        destination: '',
                                     });
                                 } catch (err) {
-                                    setErrors({
-                                        ...errors,
-                                        requestBody: 'Invalid JSON',
-                                    });
+                                    if (err instanceof Exception) {
+                                        setErrors({
+                                            ...errors,
+                                            destination: err.message,
+                                        });
+                                    } else {
+                                        setErrors({
+                                            ...errors,
+                                            destination: 'Invalid Destination',
+                                        });
+                                    }
                                 }
 
-                                monitorStep.setRequestBody(value);
+                                if (destination) {
+                                    monitorStep.setMonitorDestination(
+                                        destination
+                                    );
+                                }
+
+                                setDestinationInputValue(value);
                                 setMonitorStep(MonitorStep.clone(monitorStep));
                             }}
                         />
                     </div>
-                )}
+                    {props.monitorType === MonitorType.API && (
+                        <div className="mt-5">
+                            <FieldLabelElement
+                                title={'API Request Type'}
+                                description={
+                                    'What is the type of the API request?'
+                                }
+                                required={true}
+                            />
+                            <Dropdown
+                                initialValue={requestTypeDropdownOptions.find(
+                                    (i: DropdownOption) => {
+                                        return (
+                                            i.value ===
+                                            (monitorStep?.data?.requestType ||
+                                                HTTPMethod.GET)
+                                        );
+                                    }
+                                )}
+                                options={requestTypeDropdownOptions}
+                                onChange={(
+                                    value:
+                                        | DropdownValue
+                                        | Array<DropdownValue>
+                                        | null
+                                ) => {
+                                    monitorStep.setRequestType(
+                                        (value?.toString() as HTTPMethod) ||
+                                            HTTPMethod.GET
+                                    );
+                                    setMonitorStep(
+                                        MonitorStep.clone(monitorStep)
+                                    );
+                                }}
+                            />
+                        </div>
+                    )}
 
-            <HorizontalRule />
+                    {!showAdvancedOptionsRequestBodyAndHeaders &&
+                        props.monitorType === MonitorType.API && (
+                            <div className="mt-1 -ml-3">
+                                <Button
+                                    title="Advanced: Add Request Headers and Body"
+                                    buttonStyle={ButtonStyleType.SECONDARY_LINK}
+                                    onClick={() => {
+                                        setShowAdvancedOptionsRequestBodyAndHeaders(
+                                            true
+                                        );
+                                    }}
+                                />
+                            </div>
+                        )}
+                    {showAdvancedOptionsRequestBodyAndHeaders &&
+                        props.monitorType === MonitorType.API && (
+                            <div className="mt-5">
+                                <FieldLabelElement
+                                    title={'Request Headers'}
+                                    description={
+                                        'Request Headers to send, if any.'
+                                    }
+                                    required={false}
+                                />
+                                <DictionaryOfStrings
+                                    addButtonSuffix="Request Header"
+                                    keyPlaceholder={'Header Name'}
+                                    valuePlaceholder={'Header Value'}
+                                    initialValue={
+                                        monitorStep.data?.requestHeaders || {}
+                                    }
+                                    onChange={(value: Dictionary<string>) => {
+                                        monitorStep.setRequestHeaders(value);
+                                        setMonitorStep(
+                                            MonitorStep.clone(monitorStep)
+                                        );
+                                    }}
+                                />
+                            </div>
+                        )}
+
+                    {showAdvancedOptionsRequestBodyAndHeaders &&
+                        props.monitorType === MonitorType.API && (
+                            <div className="mt-5">
+                                <FieldLabelElement
+                                    title={'Request Body (in JSON)'}
+                                    description={
+                                        'Request Body to send in JSON, if any.'
+                                    }
+                                    required={false}
+                                />
+                                <CodeEditor
+                                    type={CodeType.JSON}
+                                    onBlur={() => {
+                                        setTouched({
+                                            ...touched,
+                                            requestBody: true,
+                                        });
+                                    }}
+                                    error={
+                                        touched['requestBody'] &&
+                                        errors['requestBody']
+                                            ? errors['requestBody']
+                                            : undefined
+                                    }
+                                    initialValue={monitorStep.data?.requestBody}
+                                    onChange={(value: string) => {
+                                        try {
+                                            JSON.parse(value);
+                                            setErrors({
+                                                ...errors,
+                                                requestBody: '',
+                                            });
+                                        } catch (err) {
+                                            setErrors({
+                                                ...errors,
+                                                requestBody: 'Invalid JSON',
+                                            });
+                                        }
+
+                                        monitorStep.setRequestBody(value);
+                                        setMonitorStep(
+                                            MonitorStep.clone(monitorStep)
+                                        );
+                                    }}
+                                />
+                            </div>
+                        )}
+
+                    <HorizontalRule />
+                </div>
+            )}
 
             <div className="mt-5">
-                <FieldLabelElement
-                    title="Monitor Criteria"
-                    isHeading={true}
-                    description={
-                        'Add Monitoring Criteria for this monitor. Monitor different properties.'
-                    }
-                    required={true}
-                />
+                {props.monitorType !== MonitorType.IncomingRequest && (
+                    <FieldLabelElement
+                        title="Monitor Criteria"
+                        isHeading={true}
+                        description={
+                            'Add Monitoring Criteria for this monitor. Monitor different properties.'
+                        }
+                        required={true}
+                    />
+                )}
                 <MonitorCriteriaElement
                     monitorType={props.monitorType}
                     monitorStatusDropdownOptions={

@@ -30,6 +30,8 @@ import MonitorStatusTimeline from 'Model/Models/MonitorStatusTimeline';
 import JSONFunctions from 'Common/Types/JSONFunctions';
 import API from 'CommonUI/src/Utils/API/API';
 import DisabledWarning from '../../../Components/Monitor/DisabledWarning';
+import MonitorType from 'Common/Types/Monitor/MonitorType';
+import IncomingMonitorLink from './IncomingMonitorLink';
 
 const MonitorView: FunctionComponent<PageComponentProps> = (
     _props: PageComponentProps
@@ -41,6 +43,10 @@ const MonitorView: FunctionComponent<PageComponentProps> = (
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const startDate: Date = OneUptimeDate.getSomeDaysAgo(90);
     const endDate: Date = OneUptimeDate.getCurrentDate();
+
+    const [monitorType, setMonitorType] = useState<MonitorType | undefined>(
+        undefined
+    );
 
     useAsyncEffect(async () => {
         await fetchItem();
@@ -73,6 +79,23 @@ const MonitorView: FunctionComponent<PageComponentProps> = (
                         createdAt: SortOrder.Ascending,
                     }
                 );
+
+            const item: Monitor | null = await ModelAPI.getItem(
+                Monitor,
+                modelId,
+                {
+                    monitorType: true,
+                } as any,
+                {}
+            );
+
+            if (!item) {
+                setError(`Monitor not found`);
+
+                return;
+            }
+
+            setMonitorType(item.monitorType);
 
             setData(monitorStatus.data);
         } catch (err) {
@@ -267,6 +290,11 @@ const MonitorView: FunctionComponent<PageComponentProps> = (
                     modelId: modelId,
                 }}
             />
+
+            {/* Heartbeat URL */}
+            {monitorType === MonitorType.IncomingRequest && (
+                <IncomingMonitorLink modelId={modelId} />
+            )}
 
             <Card
                 title="Uptime Graph"

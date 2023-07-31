@@ -45,9 +45,9 @@ export default class GreenlockCertificate extends BaseModel {
         read: [],
         update: [],
     })
-    @TableColumn({ type: TableColumnType.LongText })
+    @TableColumn({ type: TableColumnType.VeryLongText })
     @Column({
-        type: ColumnType.LongText,
+        type: ColumnType.VeryLongText,
         nullable: false,
         unique: false,
     })

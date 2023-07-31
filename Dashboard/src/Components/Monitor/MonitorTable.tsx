@@ -24,7 +24,7 @@ import {
     FormFieldStyleType,
 } from 'CommonUI/src/Components/Forms/Types/Field';
 import { ModalWidth } from 'CommonUI/src/Components/Modal/Modal';
-import MonitoringIntrerval from '../../Utils/MonitorIntervalDropdownOptions';
+import MonitoringInterval from '../../Utils/MonitorIntervalDropdownOptions';
 import MonitorStepsType from 'Common/Types/Monitor/MonitorSteps';
 import Team from 'Model/Models/Team';
 import ProjectUser from '../../Utils/ProjectUser';
@@ -68,7 +68,10 @@ const MonitorsTable: FunctionComponent<ComponentProps> = (
                     title: 'Interval',
                     id: 'monitoring-interval',
                     showIf: (values: FormValues<Monitor>) => {
-                        return values.monitorType !== MonitorType.Manual;
+                        return (
+                            values.monitorType !== MonitorType.Manual &&
+                            values.monitorType !== MonitorType.IncomingRequest
+                        );
                     },
                 },
                 {
@@ -165,7 +168,7 @@ const MonitorsTable: FunctionComponent<ComponentProps> = (
                     title: 'Monitoring Interval',
                     fieldType: FormFieldSchemaType.Dropdown,
                     required: true,
-                    dropdownOptions: MonitoringIntrerval,
+                    dropdownOptions: MonitoringInterval,
                     placeholder: 'Select Monitoring Interval',
                 },
                 {
@@ -185,7 +188,7 @@ const MonitorsTable: FunctionComponent<ComponentProps> = (
                     },
                     required: false,
                     placeholder: 'Select Teams',
-                    overideFieldKey: 'ownerTeams',
+                    overrideFieldKey: 'ownerTeams',
                 },
                 {
                     field: {
@@ -204,7 +207,7 @@ const MonitorsTable: FunctionComponent<ComponentProps> = (
                     },
                     required: false,
                     placeholder: 'Select Users',
-                    overideFieldKey: 'ownerUsers',
+                    overrideFieldKey: 'ownerUsers',
                 },
                 {
                     field: {

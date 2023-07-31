@@ -1,0 +1,1238 @@
+name: Push Test Images to Docker Hub and GitHub Container Registry
+
+on:
+  push:
+    branches:
+      - "master"
+
+jobs:
+  generate-build-number:
+    runs-on: ubuntu-latest
+    outputs:
+      build_number: ${{ steps.buildnumber.outputs.build_number }}
+    steps:
+    - name: Generate build number
+      id: buildnumber
+      uses: onyxmueller/build-tag-number@v1.0.2
+      with:
+        token: ${{secrets.github_token}}
+    - run: echo "Build number is ${{ steps.buildnumber.outputs.build_number }}"
+
+
+  nginx-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/nginx
+            ghcr.io/oneuptime/nginx
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy nginx.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./Nginx/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  test-server-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/test-server
+            ghcr.io/oneuptime/test-server
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy test-server.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./TestServer/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  workflow-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/workflow
+            ghcr.io/oneuptime/workflow
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy workflow.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./Workflow/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  link-shortener-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/link-shortener
+            ghcr.io/oneuptime/link-shortener
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy link-shortener.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./LinkShortener/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  workers-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/workers
+            ghcr.io/oneuptime/workers
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy workers.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./Workers/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  status-page-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/status-page
+            ghcr.io/oneuptime/status-page
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy status-page.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./StatusPage/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  realtime-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/realtime
+            ghcr.io/oneuptime/realtime
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy realtime.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./Realtime/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  probe-api-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/probe-api
+            ghcr.io/oneuptime/probe-api
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy probe-api.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./ProbeAPI/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  notification-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/notification
+            ghcr.io/oneuptime/notification
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy notification.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./Notification/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  licensing-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/licensing
+            ghcr.io/oneuptime/licensing
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy licensing.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./Licensing/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  integrations-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/integrations
+            ghcr.io/oneuptime/integrations
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy integrations.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./Integration/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  probe-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/probe
+            ghcr.io/oneuptime/probe
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy probe.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./Probe/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  identity-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/identity
+            ghcr.io/oneuptime/identity
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy identity.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./Identity/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  home-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/home
+            ghcr.io/oneuptime/home
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy home.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./Home/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  helm-chart-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/helm-chart
+            ghcr.io/oneuptime/helm-chart
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy helm-chart.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./HelmChart/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  haraka-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/haraka
+            ghcr.io/oneuptime/haraka
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy haraka.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./Haraka/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  file-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/file
+            ghcr.io/oneuptime/file
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy file.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./File/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  dashboard-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/dashboard
+            ghcr.io/oneuptime/dashboard
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy dashboard.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./Dashboard/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  dashboard-api-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/dashboard-api
+            ghcr.io/oneuptime/dashboard-api
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy dashboard-api.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./DashboardAPI/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  api-reference-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/api-reference
+            ghcr.io/oneuptime/api-reference
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy api-reference.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./ApiReference/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  accounts-docker-image-deploy:
+    needs: generate-build-number
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            oneuptime/accounts
+            ghcr.io/oneuptime/accounts
+          tags: |
+            type=raw,value=test,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=semver,value=7.0.${{needs.generate-build-number.outputs.build_number}}-test,pattern={{version}},enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Generate Dockerfile from Dockerfile.tpl
+        run: npm run prerun
+
+      # Build and deploy accounts.
+
+      - name: Login to Docker Hub 
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./Accounts/Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

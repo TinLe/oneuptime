@@ -16,7 +16,7 @@ import Monitor from 'Model/Models/Monitor';
 import CardModelDetail from 'CommonUI/src/Components/ModelDetail/CardModelDetail';
 import IconProp from 'Common/Types/Icon/IconProp';
 import FormFieldSchemaType from 'CommonUI/src/Components/Forms/Types/FormFieldSchemaType';
-import MonitoringIntrerval from '../../../Utils/MonitorIntervalDropdownOptions';
+import MonitoringInterval from '../../../Utils/MonitorIntervalDropdownOptions';
 import { JSONObject } from 'Common/Types/JSON';
 import MonitoringIntervalElement from '../../../Components/Monitor/MonitoringIntervalElement';
 import MonitorType from 'Common/Types/Monitor/MonitorType';
@@ -90,9 +90,28 @@ const MonitorCriteria: FunctionComponent<PageComponentProps> = (
                     description={
                         <>
                             This is a manual monitor. It does not monitor
-                            anything and so, it cannot have monitorting interval
+                            anything and so, it cannot have monitoring interval
                             set. You can have monitoring interval on other
                             monitor types.{' '}
+                        </>
+                    }
+                />
+            );
+        }
+
+        if (monitorType === MonitorType.IncomingRequest) {
+            return (
+                <EmptyState
+                    icon={IconProp.Clock}
+                    title={
+                        'No Monitoring Interval for Incoming Request / Heartbeat Monitors'
+                    }
+                    description={
+                        <>
+                            This is a incoming request / heartbeat monitor.
+                            Since OneUptime does not send an outbound request,
+                            we do not need monitoring interval. You can have
+                            monitoring interval on other monitor types.{' '}
                         </>
                     }
                 />
@@ -118,7 +137,7 @@ const MonitorCriteria: FunctionComponent<PageComponentProps> = (
 
                         title: 'Monitoring Interval',
                         fieldType: FormFieldSchemaType.Dropdown,
-                        dropdownOptions: MonitoringIntrerval,
+                        dropdownOptions: MonitoringInterval,
                         required: true,
                         placeholder: 'Monitoring Interval',
                     },
