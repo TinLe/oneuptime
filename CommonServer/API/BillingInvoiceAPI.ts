@@ -75,6 +75,7 @@ export default class UserAPI extends BaseAPI<
                                 _id: true,
                                 paymentProviderCustomerId: true,
                                 paymentProviderSubscriptionId: true,
+                                paymentProviderMeteredSubscriptionId: true,
                             },
                         });
 
@@ -140,11 +141,18 @@ export default class UserAPI extends BaseAPI<
                             project.paymentProviderSubscriptionId as string
                         );
 
+                    const meteredSubscriptionState: SubscriptionStatus =
+                        await BillingService.getSubscriptionStatus(
+                            project.paymentProviderMeteredSubscriptionId as string
+                        );
+
                     await ProjectService.updateOneById({
                         id: project.id!,
                         data: {
                             paymentProviderSubscriptionStatus:
                                 subscriptionState,
+                            paymentProviderMeteredSubscriptionStatus:
+                                meteredSubscriptionState,
                         },
                         props: {
                             isRoot: true,

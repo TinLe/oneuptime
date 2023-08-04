@@ -1,28 +1,20 @@
 export default class MeteredPlan {
-    private monthlyPriceId: string;
-    private yearlyPriceId: string;
+    private priceId: string;
     private unitName: string;
     private pricePerUnit: number;
 
     public constructor(
-        monthlyPriceId: string,
-        yearlyPriceId: string,
+        priceId: string,
         pricePerUnit: number,
         unitName: string
     ) {
-        this.monthlyPriceId = monthlyPriceId;
-        this.yearlyPriceId = yearlyPriceId;
-
+        this.priceId = priceId;
         this.pricePerUnit = pricePerUnit;
         this.unitName = unitName;
     }
 
-    public getMonthlyPriceId(): string {
-        return this.monthlyPriceId;
-    }
-
-    public getYearlyPriceId(): string {
-        return this.yearlyPriceId;
+    public getPriceId(): string {
+        return this.priceId;
     }
 
     public getPricePerUnit(): number {

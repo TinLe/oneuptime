@@ -15,9 +15,8 @@ export default class MeteredPlanUtil {
             if (values.length > 0) {
                 return new MeteredPlan(
                     values[0] as string,
-                    values[1] as string,
-                    parseInt(values[2] as string),
-                    values[3] as string
+                    parseInt(values[1] as string),
+                    values[2] as string
                 );
             }
         }

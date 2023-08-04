@@ -47,9 +47,13 @@ x-common-server-variables: &common-server-variables
     DATABASE_SSL_CERT: ${DATABASE_SSL_CERT}
     DATABASE_SSL_REJECT_UNAUTHORIZED: ${DATABASE_SSL_REJECT_UNAUTHORIZED}
 
+    REDIS_USERNAME: ${REDIS_USERNAME}
     REDIS_PASSWORD: ${REDIS_PASSWORD}
     REDIS_HOST: ${REDIS_HOST}
     REDIS_PORT: ${REDIS_PORT}
+    REDIS_DB: ${REDIS_DB}
+    REDIS_TLS_CA: ${REDIS_TLS_CA}
+    REDIS_TLS_SENTINEL_MODE: ${REDIS_TLS_SENTINEL_MODE}
 
     ENCRYPTION_SECRET: ${ENCRYPTION_SECRET}
     DISABLE_SIGNUP: ${DISABLE_SIGNUP}
@@ -88,6 +92,18 @@ x-common-server-variables: &common-server-variables
 
 
 services:
+
+    minio: 
+        networks:
+          - oneuptime
+        image:  minio/minio:latest
+        restart: always
+        command: server /data --console-address ":9001"
+        environment:
+            MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+            MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+        volumes: 
+            - minio:/data
     
     haraka:
         networks:
@@ -191,6 +207,15 @@ services:
             - dashboard-api
             
         
+
+    test-server:
+        networks:
+          - oneuptime
+        restart: always
+        environment: 
+            <<: *common-server-variables
+            PORT: ${TEST_SERVER_PORT}
+            
 
     dashboard-api:
         networks:
@@ -387,6 +412,7 @@ services:
 volumes:
     postgres:
     clickhouse:
+    minio: 
 
 #networks:
 #  oneuptime:

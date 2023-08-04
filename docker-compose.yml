@@ -5,6 +5,11 @@ version: '3.7'
 
 services:
     
+    minio:
+        extends:
+            file: ./docker-compose.base.yml
+            service: minio
+
     haraka:
         extends:
             file: ./docker-compose.base.yml
@@ -147,6 +152,7 @@ services:
 volumes:
     postgres:
     clickhouse:
+    minio:
 
 #networks:
 #  oneuptime:
