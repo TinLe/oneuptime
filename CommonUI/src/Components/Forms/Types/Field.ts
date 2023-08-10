@@ -30,8 +30,6 @@ export interface CustomElementProps {
     placeholder?: string | undefined;
 }
 
-
-
 export default interface Field<TEntity> {
     name?: string; // form field name, should be unique in thr form. If not provided, the field will be auto generated.
     title?: string;
