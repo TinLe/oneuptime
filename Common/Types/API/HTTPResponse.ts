@@ -23,7 +23,6 @@ export default class HTTPResponse<
         this._jsonData = v;
     }
 
-
     private _data!: T;
     public get data(): T {
         return this._data;
@@ -84,7 +83,6 @@ export default class HTTPResponse<
             this.jsonData = JSONFunctions.deserializeArray(
                 data['data'] as JSONArray
             );
-
         } else if (Array.isArray(data)) {
             this.jsonData = JSONFunctions.deserializeArray(data as JSONArray);
         } else if (Typeof.String === typeof data) {
