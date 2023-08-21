@@ -117,6 +117,10 @@ import IncidentTemplate from './IncidentTemplate';
 import IncidentTemplateOwnerTeam from './IncidentTemplateOwnerTeam';
 import IncidentTemplateOwnerUser from './IncidentTemplateOwnerUser';
 
+import AnalyticsBaseModel from 'Common/Models/AnalyticsBaseModel';
+
+import Log from './Log';
+
 export default [
     User,
     Probe,
@@ -217,4 +221,9 @@ export default [
     IncidentTemplate,
     IncidentTemplateOwnerTeam,
     IncidentTemplateOwnerUser,
+];
+
+
+export const AnalyticsModels: Array<typeof AnalyticsBaseModel> = [
+    Log
 ];
