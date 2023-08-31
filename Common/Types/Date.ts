@@ -483,8 +483,7 @@ export default class OneUptimeDate {
     }
 
     public static getDayInSeconds(days?: number | undefined): number {
-
-        if(!days){
+        if (!days) {
             days = 1;
         }
         return 24 * 60 * 60 * days;
