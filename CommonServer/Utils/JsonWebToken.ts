@@ -12,7 +12,12 @@ import JSONFunctions from 'Common/Types/JSONFunctions';
 
 class JSONWebToken {
     public static sign(
-        data: JSONWebTokenData | User | StatusPagePrivateUser | string | JSONObject,
+        data:
+            | JSONWebTokenData
+            | User
+            | StatusPagePrivateUser
+            | string
+            | JSONObject,
         expiresInSeconds: number
     ): string {
         let jsonObj: JSONObject;
