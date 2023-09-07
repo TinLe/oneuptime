@@ -86,6 +86,7 @@ const ScheduledMaintenancesPage: FunctionComponent<PageComponentProps> = (
                         );
                     }
 
+
                     return Promise.resolve(item);
                 }}
                 selectMoreFields={{
