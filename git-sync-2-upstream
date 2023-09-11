@@ -1,0 +1,35 @@
+#!/bin/bash
+# https://help.github.com/articles/syncing-a-fork/
+
+echo "If you have not setup your repo for sync to upstream, do the following..."
+echo "To see your fork"
+echo "git remote -v"
+echo "Find the original repo that you forked from and "
+echo "git remote add upstream https://github.com/OriginalRepo.git"
+
+echo "Current directory: $(pwd)"
+echo
+
+echo "fetching upstream....."
+git fetch upstream
+
+# view all branches, including those from upstream
+git branch -va
+
+echo "checkout master...."
+git checkout master
+echo "merging upstream/master...."
+git merge upstream/master
+
+# release branch if any
+echo "checkout release...."
+if ! git checkout release ; then
+  echo "No such branch release...."
+else
+  echo "merge upstream/release....."
+  if ! git merge upstream/release ; then
+    echo "No such branch release...."
+  fi
+fi
+
+echo "Do not forget to do git push....."

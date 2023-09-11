@@ -1,0 +1,44 @@
+07/27/2023
+
+Update the User table isEmailVerified field to true
+
+```
+oneuptimedb=# update public."User" set "isEmailVerified" = true where email='tin@openloot.com';
+UPDATE 1
+
+# have to specify schema "public" to see table
+oneuptimedb=# select * from public."User" ;
+                 _id                  |         createdAt          |         updatedAt          | de
+letedAt | version |  name  |      email       | newUnverifiedTemporaryEmail |       slug        |
+                          password                             | isEmailVerified | companyName | job
+Role | companySize | referral | companyPhoneNumber | profilePictureId | twoFactorAuthEnabled | twoFa
+ctorSecretCode | twoFactorAuthUrl | backupCodes | jwtRefreshToken | paymentProviderCustomerId |
+     resetPasswordToken          |    resetPasswordExpires    | timezone |         lastActive
+  | promotionName | isDisabled | paymentFailedDate | isMasterAdmin | isBlocked | alertPhoneNumber |
+alertPhoneVerificationCode | alertPhoneVerificationCodeRequestTime | tempAlertPhoneNumber
+--------------------------------------+----------------------------+----------------------------+---
+--------+---------+--------+------------------+-----------------------------+-------------------+---
+---------------------------------------------------------------+-----------------+-------------+----
+-----+-------------+----------+--------------------+------------------+----------------------+------
+---------------+------------------+-------------+-----------------+---------------------------+-----
+---------------------------------+----------------------------+----------+--------------------------
+--+---------------+------------+-------------------+---------------+-----------+------------------+-
+---------------------------+---------------------------------------+----------------------
+ 5e530974-5dbf-4cd6-8cdc-8353e56fef9e | 2023-07-27 21:52:40.431224 | 2023-07-27 21:53:05.77387  |
+        |      13 | Tin Le | tin@bigtime.gg   |                             | tin-le-3808671740 | 73
+023bd680f93f2566903ac16c80e771970047ba46e7a30eb6bc8582e5c5970b | f               |             |
+     |             |          |                    |                  | f                    |
+               |                  |             |                 |                           |
+                                 |                            |          | 2023-07-27 21:53:05.745+0
+0 |               | f          |                   | f             | f         |                  |
+                           |                                       |
+ 24fbcf8b-25ca-4c9f-b9b5-1fe66286b791 | 2023-07-25 00:01:20.514278 | 2023-07-27 21:46:23.771856 |
+        |     180 | Tin Le | tin@openloot.com |                             | tin-le-4212431432 | 73
+023bd680f93f2566903ac16c80e771970047ba46e7a30eb6bc8582e5c5970b | t               |             |
+     |             |          |                    |                  | f                    |
+               |                  |             |                 |                           | 07e5
+5c50-2cc7-11ee-911a-e1840e51bf87 | 2023-07-28 21:46:23.765+00 |          | 2023-07-27 21:21:19.252+0
+0 |               | f          |                   | f             | f         |                  |
+                           |                                       |
+(2 rows)
+```
