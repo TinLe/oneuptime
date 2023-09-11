@@ -401,7 +401,8 @@ services:
             - home
             - notification
         restart: always
-        image: nginx:1.25.1-alpine
+        networks:
+          - oneuptime
         environment:
             <<: *common-variables
         ports:
